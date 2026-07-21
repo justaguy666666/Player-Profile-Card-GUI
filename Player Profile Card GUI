@@ -1,0 +1,459 @@
+local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
+local Window = Rayfield:CreateWindow({
+	Name = "Player Profile Card GUI",
+	LoadingTitle = "Player Profile Card GUI",
+	LoadingSubtitle = "Made by EasyAssNames",
+	ConfigurationSaving = {
+		Enabled = true,
+		FolderName = "ProfileCard",
+		FileName = "Settings"
+	}
+})
+
+local Tab = Window:CreateTab("Main", 4483362458)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local CardEnabled = true
+local RainbowBorder = true
+local BorderColor = Color3.fromRGB(0,0,0)
+local CardColor = Color3.fromRGB(25,25,35)
+local CardTransparency = 0.15
+local DetectionRange = 30
+local ClosingCard = false
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "PlayerProfileCard"
+gui.ResetOnSpawn = false
+gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local TweenService = game:GetService("TweenService")
+
+local card = Instance.new("Frame")
+card.Name = "HologramCard"
+card.Size = UDim2.fromOffset(330,230)
+card.Visible = false
+card.BackgroundColor3 = CardColor
+card.BackgroundTransparency = 1
+card.Parent = gui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0,4)
+corner.Parent = card
+
+local cardScale = Instance.new("UIScale")
+cardScale.Scale = 0.85
+cardScale.Parent = card
+
+local stroke = Instance.new("UIStroke")
+stroke.Name = "MainBorder"
+stroke.Thickness = 2
+stroke.Color = BorderColor
+stroke.Transparency = 0
+stroke.Parent = card
+
+local glow = Instance.new("UIStroke")
+glow.Name = "Glow"
+glow.Thickness = 8
+glow.Color = BorderColor
+glow.Transparency = 0.7
+glow.Parent = card
+
+local scanLine = Instance.new("Frame")
+scanLine.Name = "ScanLine"
+scanLine.Size = UDim2.new(1,0,0,2)
+scanLine.BackgroundColor3 = BorderColor
+scanLine.BorderSizePixel = 0
+scanLine.BackgroundTransparency = 0.2
+scanLine.Parent = card
+
+task.spawn(function()
+	while card.Parent do
+		for i = 0,1,0.01 do
+			scanLine.Position =
+				UDim2.new(0,0,i,0)
+			task.wait(0.02)
+		end
+	end
+end)
+
+local avatar = Instance.new("ImageLabel")
+avatar.Size = UDim2.fromOffset(80,80)
+avatar.Position = UDim2.fromOffset(25,55)
+avatar.BackgroundTransparency = 1
+avatar.Parent = card
+
+local avatarCorner = Instance.new("UICorner")
+avatarCorner.CornerRadius = UDim.new(1,0)
+avatarCorner.Parent = avatar
+
+local text = Instance.new("TextLabel")
+text.Size = UDim2.new(1,-140,1,-40)
+text.Position = UDim2.fromOffset(125,20)
+
+text.BackgroundTransparency = 1
+text.TextColor3 = Color3.new(1,1,1)
+
+text.Font = Enum.Font.GothamBold
+text.TextSize = 20
+text.TextScaled = false
+
+text.TextWrapped = true
+text.TextXAlignment = Enum.TextXAlignment.Left
+text.TextYAlignment = Enum.TextYAlignment.Top
+
+text.Parent = card
+
+local textConstraint = Instance.new("UITextSizeConstraint")
+textConstraint.MinTextSize = 11
+textConstraint.MaxTextSize = 18
+textConstraint.Parent = text
+
+local textPadding = Instance.new("UIPadding")
+textPadding.PaddingTop = UDim.new(0,5)
+textPadding.PaddingBottom = UDim.new(0,5)
+textPadding.PaddingLeft = UDim.new(0,5)
+textPadding.PaddingRight = UDim.new(0,5)
+textPadding.Parent = text
+
+local function closeCard()
+	if not card.Visible or ClosingCard then
+		return
+	end
+	ClosingCard = true
+	local originalPosition = card.Position
+	local swipeTween =
+		TweenService:Create(
+			card,
+			TweenInfo.new(
+				0.35,
+				Enum.EasingStyle.Quint,
+				Enum.EasingDirection.In
+			),
+			{
+				Position =
+					originalPosition + UDim2.fromOffset(150,0),
+
+				BackgroundTransparency = 1
+			}
+		)
+
+	local scaleTween =
+		TweenService:Create(
+			cardScale,
+			TweenInfo.new(
+				0.35,
+				Enum.EasingStyle.Quint,
+				Enum.EasingDirection.In
+			),
+			{
+				Scale = 0.85
+			}
+		)
+
+	swipeTween:Play()
+	scaleTween:Play()
+
+	swipeTween.Completed:Wait()
+	card.Visible = false
+	card.BackgroundTransparency = CardTransparency
+	cardScale.Scale = 1
+
+	ClosingCard = false
+
+end
+
+local currentPlayer
+local function updateCard(player)
+	if not player.Character then
+		return
+	end
+
+	local image =
+		Players:GetUserThumbnailAsync(
+			player.UserId,
+			Enum.ThumbnailType.HeadShot,
+			Enum.ThumbnailSize.Size150x150
+		)
+
+	avatar.Image = image
+
+	local humanoid =
+		player.Character:FindFirstChildOfClass("Humanoid")
+	    local health = "UNKNOWN"
+	 if humanoid then
+		health =
+	    	math.floor(humanoid.Health)
+		    ..
+	        "/"
+	    	..
+			math.floor(humanoid.MaxHealth)
+	end
+	  local rootPart =
+	player.Character:FindFirstChild("HumanoidRootPart")
+
+local teamName = "NONE"
+
+if player.Team then
+	teamName = player.Team.Name
+end
+
+local distance = "UNKNOWN"
+if rootPart and LocalPlayer.Character then
+	local localRoot =
+		LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+	if localRoot then
+		distance =
+			math.floor(
+				(rootPart.Position - localRoot.Position).Magnitude
+			)
+			..
+			" studs"
+	end
+end
+
+local location = "UNKNOWN"
+if rootPart then
+	local pos = rootPart.Position
+	location =
+		math.floor(pos.X)
+		..
+		", "
+		..
+		math.floor(pos.Y)
+		..
+		", "
+		..
+		math.floor(pos.Z)
+end
+
+text.Text =
+	"◈ IDENTITY SCAN\n"
+	..
+	"DISPLAY: "
+	..
+	player.DisplayName
+	..
+	"\nUSER: @"
+	..
+	player.Name
+	..
+	"\nID: "
+	..
+	player.UserId
+	..
+	"\nAGE: "
+	..
+	player.AccountAge
+	..
+	"D"
+	..
+	"\n\n◈ LIVE DATA\n"
+	..
+	"HP: "
+	..
+	health
+	..
+	"\nDIST: "
+	..
+	distance
+	..
+    "\n\n◈ STATUS\n"
+    ..
+    "TEAM: "
+    ..
+    teamName
+	..
+	"\nPOS: "
+	..
+	location
+
+if not card.Visible then
+	card.Visible = true
+	cardScale.Scale = 0.85
+	card.BackgroundTransparency = 1
+	local scaleTween =
+		TweenService:Create(
+			cardScale,
+			TweenInfo.new(
+				0.35,
+				Enum.EasingStyle.Back,
+				Enum.EasingDirection.Out
+			),
+			{
+				Scale = 1
+			}
+		)
+
+	local fadeTween =
+		TweenService:Create(
+			card,
+			TweenInfo.new(
+				0.35,
+				Enum.EasingStyle.Quint,
+				Enum.EasingDirection.Out
+			),
+			{
+				BackgroundTransparency = CardTransparency
+			}
+		)
+
+	scaleTween:Play()
+	fadeTween:Play()
+end
+end
+
+RunService.RenderStepped:Connect(function()
+
+	if not CardEnabled then
+		card.Visible = false
+		return
+	end
+
+	local character = LocalPlayer.Character
+	if not character then
+		return
+	end
+
+	local root =
+		character:FindFirstChild("HumanoidRootPart")
+
+	if not root then
+		return
+	end
+
+	local closest = nil
+	local closestDistance = DetectionRange
+
+	for _,player in ipairs(Players:GetPlayers()) do
+
+		if player ~= LocalPlayer
+		and player.Character
+		and player.Character:FindFirstChild("HumanoidRootPart")
+		then
+
+			local distance =
+				(
+					player.Character.HumanoidRootPart.Position
+					-
+					root.Position
+				).Magnitude
+
+			if distance < closestDistance then
+
+				closestDistance = distance
+				closest = player
+			end
+		end
+	end
+
+	if closest then
+		updateCard(closest)
+
+		local targetRoot =
+			closest.Character.HumanoidRootPart
+
+		local screenPos, visible =
+			Camera:WorldToViewportPoint(
+				targetRoot.Position + Vector3.new(0,4,0)
+			)
+
+		if visible and not ClosingCard then
+
+	card.Position =
+		UDim2.fromOffset(
+			screenPos.X,
+			screenPos.Y
+		)
+    end
+	else
+
+	closeCard()
+
+end
+end)
+
+RunService.RenderStepped:Connect(function()
+	local color = BorderColor
+	if RainbowBorder then
+		color =
+			Color3.fromHSV(
+				(tick()*0.15)%1,
+				1,
+				1
+			)
+	end
+
+	stroke.Color = color
+	glow.Color = color
+	scanLine.BackgroundColor3 = color
+end)
+
+Tab:CreateSection("Profile Card")
+
+Tab:CreateToggle({
+	Name = "Enable Card",
+	CurrentValue = true,
+	Callback = function(value)
+		CardEnabled = value
+		if not value then
+			card.Visible = false
+		end
+
+	end,
+})
+
+Tab:CreateToggle({
+	Name = "Rainbow Border",
+	CurrentValue = true,
+	Callback = function(value)
+		RainbowBorder = value
+	end,
+})
+
+Tab:CreateColorPicker({
+	Name = "Border Color",
+	Color = BorderColor,
+	Callback = function(color)
+		BorderColor = color
+	end,
+})
+
+Tab:CreateColorPicker({
+	Name = "Card Color",
+	Color = CardColor,
+	Callback = function(color)
+		CardColor = color
+		card.BackgroundColor3 = color
+	end,
+})
+
+Tab:CreateSlider({
+	Name = "Detection Range",
+	Range = {5,100},
+	Increment = 5,
+	CurrentValue = 30,
+	Callback = function(value)
+		DetectionRange = value
+	end,
+})
+
+Tab:CreateSlider({
+	Name = "Transparency",
+	Range = {0,1},
+	Increment = .05,
+	CurrentValue = .15,
+	Callback = function(value)
+		CardTransparency = value
+		card.BackgroundTransparency = value
+	end,
+})
+
+Rayfield:Notify({
+	Title = "Loaded",
+	Content = "Player Profile Card GUI Ready",
+	Duration = 4
+})

@@ -8,7 +8,6 @@ User ID,
 Account age, 
 Health, 
 Distance, 
-Team, 
 Position.
 
 Shows their avatar thumbnail,

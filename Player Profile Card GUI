@@ -195,12 +195,6 @@ local function updateCard(player)
 	  local rootPart =
 	player.Character:FindFirstChild("HumanoidRootPart")
 
-local teamName = "NONE"
-
-if player.Team then
-	teamName = player.Team.Name
-end
-
 local distance = "UNKNOWN"
 if rootPart and LocalPlayer.Character then
 	local localRoot =
@@ -262,10 +256,6 @@ text.Text =
 	distance
 	..
     "\n\n◈ STATUS\n"
-    ..
-    "TEAM: "
-    ..
-    teamName
 	..
 	"\nPOS: "
 	..
